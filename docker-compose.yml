@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  portfolio-api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # Mount the data folder so that our vector_index.json persists
+      # even if the container is destroyed and recreated
+      - ./data:/app/data

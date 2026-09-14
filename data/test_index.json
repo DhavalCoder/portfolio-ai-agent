@@ -1,0 +1,16 @@
+[
+  {
+    "text": "I love Python",
+    "vector": [
+      1.0,
+      0.0
+    ]
+  },
+  {
+    "text": "I eat apples",
+    "vector": [
+      0.0,
+      1.0
+    ]
+  }
+]
