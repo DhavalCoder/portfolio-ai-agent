@@ -10,8 +10,8 @@ app = FastAPI(title="Portfolio AI Agent API")
 # Configure Security / CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all origins so local HTML files can connect
-    allow_credentials=True,
+    allow_origins=["*"], 
+    allow_credentials=False, # Fixes strict browser CORS blocking
     allow_methods=["*"],
     allow_headers=["*"],
 )
