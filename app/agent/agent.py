@@ -1,4 +1,6 @@
 import os
+import json
+import urllib.parse
 from openai import OpenAI
 from app.rag.retriever import ResumeRetriever
 from app.agent.prompts import SYSTEM_PROMPT
@@ -41,6 +43,27 @@ class PortfolioAgent:
         # 2. Format the system prompt with our retrieved context
         formatted_system_prompt = SYSTEM_PROMPT.format(context=context)
         
+        # Define our image generation tool
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "generate_image",
+                    "description": "Call this tool IMMEDIATELY if the user asks you to generate, draw, or create a picture/image. Provide a highly detailed, comma-separated prompt.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "prompt": {
+                                "type": "string",
+                                "description": "A highly detailed, professional image generation prompt. Add descriptors like '8k resolution, highly detailed, cinematic lighting'."
+                            }
+                        },
+                        "required": ["prompt"]
+                    }
+                }
+            }
+        ]
+        
         # 3. Call the LLM
         try:
             response = self.client.chat.completions.create(
@@ -50,8 +73,28 @@ class PortfolioAgent:
                     {"role": "user", "content": user_question}
                 ],
                 temperature=0.3, # Low temperature keeps the AI factual and grounded
-                max_tokens=250
+                max_tokens=250,
+                tools=tools,
+                tool_choice="auto"
             )
-            return response.choices[0].message.content
+            
+            # 4. Check if the LLM decided to use our tool!
+            response_message = response.choices[0].message
+            if response_message.tool_calls:
+                tool_call = response_message.tool_calls[0]
+                if tool_call.function.name == "generate_image":
+                    args = json.loads(tool_call.function.arguments)
+                    detailed_prompt = args.get("prompt", "a futuristic cyberpunk landscape")
+                    
+                    # URL encode the prompt for Pollinations
+                    encoded_prompt = urllib.parse.quote(detailed_prompt)
+                    
+                    # Create the Pollinations URL
+                    image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=512&height=512&nologo=true"
+                    
+                    # Return special markdown that the frontend will parse into an image
+                    return f"I generated the image for you:\n\n![Generated Image]({image_url})\n\n*(Prompt: {detailed_prompt})*"
+            
+            return response_message.content
         except Exception as e:
             return f"Sorry, I encountered an error connecting to my AI brain: {str(e)}"
