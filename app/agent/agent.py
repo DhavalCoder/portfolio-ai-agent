@@ -95,7 +95,7 @@ class PortfolioAgent:
                     image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=512&height=512&nologo=true"
                     
                     # Return special markdown that the frontend will parse into an image
-                    return f"I generated the image for you:\n\n![Generated Image]({image_url})\n\n*(Prompt: {detailed_prompt})*"
+                    return f"I generated the image for you:\n\n![Generated Image]({image_url})"
             
             return response_message.content
         except Exception as e:
