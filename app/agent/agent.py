@@ -19,7 +19,9 @@ class PortfolioAgent:
             base_url="https://api.groq.com/openai/v1"
         )
         self.retriever = ResumeRetriever()
-        self.model = LLM_MODEL
+        
+        # We MUST hardcode to a Llama 3.1 model because older Llama 3 models on Groq do not support Tool Calling!
+        self.model = "llama-3.1-8b-instant"
         
         # Initialize our new security layer
         self.guardrail = SecurityGuardrail(self.client, self.model)
