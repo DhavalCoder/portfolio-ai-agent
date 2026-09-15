@@ -97,6 +97,11 @@ class PortfolioAgent:
                     # Return special markdown that the frontend will parse into an image
                     return f"I generated the image for you:\n\n![Generated Image]({image_url})"
             
-            return response_message.content
+            import re
+            final_content = response_message.content
+            if final_content:
+                # Strip out the Chain of Thought reasoning so the user only sees the final answer
+                final_content = re.sub(r'<thinking>.*?</thinking>', '', final_content, flags=re.DOTALL).strip()
+            return final_content
         except Exception as e:
             return f"Sorry, I encountered an error connecting to my AI brain: {str(e)}"
