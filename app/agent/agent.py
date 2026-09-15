@@ -20,8 +20,8 @@ class PortfolioAgent:
         )
         self.retriever = ResumeRetriever()
         
-        # We MUST hardcode to a Llama 3.1 model because older Llama 3 models on Groq do not support Tool Calling!
-        self.model = "llama-3.1-8b-instant"
+        # We must use a model that supports Tool Calling! 
+        self.model = "qwen/qwen3.8-27b"
         
         # Initialize our new security layer
         self.guardrail = SecurityGuardrail(self.client, self.model)
