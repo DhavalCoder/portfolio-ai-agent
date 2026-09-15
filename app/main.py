@@ -34,7 +34,7 @@ async def chat(request: ChatRequest):
     """
     try:
         # Hand the validated string to the Agent we built in Stage 7
-        answer = agent.ask(request.message)
+        answer = agent.ask(request.message, request.history)
         
         # Wrap the string in our Pydantic response model
         return ChatResponse(answer=answer)

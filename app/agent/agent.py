@@ -26,15 +26,18 @@ class PortfolioAgent:
         # Initialize our new security layer
         self.guardrail = SecurityGuardrail(self.client, self.model)
 
-    def ask(self, user_question: str) -> str:
+    def ask(self, user_question: str, history: list = None) -> str:
         """
         The core RAG loop:
         1. Guardrail Security Check.
         2. Search the vector database for resume chunks.
         3. Inject chunks into the System Prompt.
-        4. Send the Prompt + User Question to the LLM.
+        4. Send the Prompt + History + User Question to the LLM.
         5. Return the conversational answer.
         """
+        if history is None:
+            history = []
+            
         # 1. Security Check (Block bad behavior instantly)
         if not self.guardrail.is_safe(user_question):
             return "I am a professional portfolio assistant. I cannot fulfill that request."
@@ -66,14 +69,17 @@ class PortfolioAgent:
             }
         ]
         
+        # Construct the conversation timeline
+        messages = [{"role": "system", "content": formatted_system_prompt}]
+        for msg in history:
+            messages.append({"role": msg.role, "content": msg.content})
+        messages.append({"role": "user", "content": user_question})
+        
         # 3. Call the LLM
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
-                messages=[
-                    {"role": "system", "content": formatted_system_prompt},
-                    {"role": "user", "content": user_question}
-                ],
+                messages=messages,
                 temperature=0.3, # Low temperature keeps the AI factual and grounded
                 max_tokens=250,
                 tools=tools,
